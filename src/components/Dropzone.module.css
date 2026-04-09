@@ -1,0 +1,52 @@
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.dropzone:hover, .active {
+  border-color: var(--color-primary);
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.iconContainer {
+  margin-bottom: 1.5rem;
+  color: var(--color-text-muted);
+  transition: all 0.3s ease;
+}
+
+.icon {
+  color: var(--color-text-muted);
+}
+
+.iconActive {
+  color: var(--color-primary);
+  transform: scale(1.1);
+}
+
+.heading {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--color-text);
+}
+
+.subtext {
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  margin-bottom: 2rem;
+}
+
+.btn {
+  pointer-events: none; /* Let the dropzone handle the click */
+}
