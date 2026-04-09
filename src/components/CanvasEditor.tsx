@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Stage, Layer, Image as KonvaImage, Rect, Circle, Line, Text, Group } from 'react-konva';
+import { Stage, Layer, Image as KonvaImage, Rect, Circle, Line, Text, Group, Transformer } from 'react-konva';
 import { Square, Circle as CircleIcon, PenTool, MousePointer2, RotateCw, RectangleHorizontal } from 'lucide-react';
 import useImage from '../hooks/useImage';
 import { extractCrop } from '../utils/cropImage';
@@ -11,11 +11,12 @@ import styles from './CanvasEditor.module.css';
 interface CanvasEditorProps {
   imageFile: File;
   onCropAdd: (region: CropRegion) => void;
+  onUpdateRegion: (id: string, updates: Partial<CropRegion>) => void;
   onClearRegions: () => void;
   regions: CropRegion[];
 }
 
-export default function CanvasEditor({ imageFile, onCropAdd, onClearRegions, regions }: CanvasEditorProps) {
+export default function CanvasEditor({ imageFile, onCropAdd, onUpdateRegion, onClearRegions, regions }: CanvasEditorProps) {
   const imageUrl = React.useMemo(() => URL.createObjectURL(imageFile), [imageFile]);
   const [image, status] = useImage(imageUrl);
   
@@ -26,8 +27,10 @@ export default function CanvasEditor({ imageFile, onCropAdd, onClearRegions, reg
   const [rotation, setRotation] = useState(0);
   const [tool, setTool] = useState<ToolType | 'select'>('rectangle');
   const [isDrawing, setIsDrawing] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   
   const [newRegion, setNewRegion] = useState<Partial<CropRegion> | null>(null);
+  const transformerRef = useRef<any>(null);
 
   // Resize canvas to fit image nicely
   useEffect(() => {
@@ -51,8 +54,28 @@ export default function CanvasEditor({ imageFile, onCropAdd, onClearRegions, reg
     }
   }, [image, rotation]);
 
+  // Handle Transformer linking
+  useEffect(() => {
+    if (selectedId && transformerRef.current) {
+      const stage = transformerRef.current.getStage();
+      const selectedNode = stage.findOne(`.${selectedId}`);
+      if (selectedNode) {
+        transformerRef.current.nodes([selectedNode]);
+        transformerRef.current.getLayer().batchDraw();
+      }
+    }
+  }, [selectedId, regions]);
+
   const handleMouseDown = (e: any) => {
+    // If we click the stage (not a shape), deselect
+    if (e.target === e.target.getStage()) {
+      setSelectedId(null);
+    }
+
     if (tool === 'select') return;
+    
+    // De-select when starting to draw new
+    setSelectedId(null);
     
     // For polygon, we click to add points
     if (tool === 'polygon') {
@@ -116,6 +139,31 @@ export default function CanvasEditor({ imageFile, onCropAdd, onClearRegions, reg
       onCropAdd({ ...finalizedRegion, dataUrl });
     }
     setNewRegion(null);
+  };
+
+  const handleRegionUpdate = async (id: string, node: any) => {
+    if (!image) return;
+
+    const updates: Partial<CropRegion> = {
+      x: node.x(),
+      y: node.y(),
+      width: node.width() * node.scaleX(),
+      height: node.height() * node.scaleY(),
+    };
+
+    // Reset scale to 1 and apply to width/height for standard storage
+    node.setAttrs({
+      scaleX: 1,
+      scaleY: 1,
+      width: updates.width,
+      height: updates.height,
+    });
+
+    const region = regions.find(r => r.id === id);
+    if (region) {
+      const dataUrl = await extractCrop(image, { ...region, ...updates }, scale, scale, rotation);
+      onUpdateRegion(id, { ...updates, dataUrl });
+    }
   };
 
   const handlePolygonComplete = async () => {
@@ -247,7 +295,17 @@ export default function CanvasEditor({ imageFile, onCropAdd, onClearRegions, reg
 
             {/* Render saved regions */}
             {regions.map((r, i) => (
-              <Group key={r.id} x={r.x} y={r.y}>
+              <Group 
+                key={r.id} 
+                className={r.id} // For Transformer lookup
+                x={r.x} 
+                y={r.y}
+                draggable={tool === 'select'}
+                onClick={() => tool === 'select' && setSelectedId(r.id)}
+                onTap={() => tool === 'select' && setSelectedId(r.id)}
+                onDragEnd={(e) => handleRegionUpdate(r.id, e.target)}
+                onTransformEnd={(e) => handleRegionUpdate(r.id, e.target)}
+              >
                 {r.tool === 'polygon' && r.points ? (
                   <Line 
                     points={r.points.flatMap(p => [p.x - r.x, p.y - r.y])} 
@@ -277,13 +335,34 @@ export default function CanvasEditor({ imageFile, onCropAdd, onClearRegions, reg
                   />
                 )}
                 
-                {/* Number label overlay */}
-                <Group x={-10} y={-10}>
-                  <Rect fill="#10b981" width={20} height={20} cornerRadius={4} />
-                  <Text text={`${i + 1}`} fill="white" width={20} y={4} align="center" fontSize={12} fontStyle="bold" />
+                {/* Number label overlay - REVERTED TO EMERALD THEME */}
+                <Group x={r.width/2 - 12} y={-24}>
+                  <Rect fill="#10b981" width={24} height={20} cornerRadius={2} />
+                  <Text text={`${i + 1}`} fill="white" width={24} y={4} align="center" fontSize={11} fontStyle="bold" />
+                  {/* Small arrow/stem for label */}
+                  <Line points={[12, 20, 12, 24]} stroke="#10b981" strokeWidth={2} />
                 </Group>
               </Group>
             ))}
+
+            {/* Transformer Component */}
+            {selectedId && (
+              <Transformer
+                ref={transformerRef}
+                boundBoxFunc={(oldBox, newBox) => {
+                  // limit resize if needed
+                  if (newBox.width < 10 || newBox.height < 10) {
+                    return oldBox;
+                  }
+                  return newBox;
+                }}
+                rotateEnabled={false}
+                anchorFill="#ef4444"
+                anchorStroke="#ef4444"
+                anchorSize={8}
+                borderStroke="#fbbf24"
+              />
+            )}
 
             {/* Render current drawing shape */}
             {newRegion && (
@@ -301,8 +380,8 @@ export default function CanvasEditor({ imageFile, onCropAdd, onClearRegions, reg
                     y={(newRegion.y || 0) + (newRegion.height || 0)/2} 
                     radius={Math.abs(newRegion.width || 0)/2} 
                     stroke="#fbbf24" 
-                    strokeWidth={2} 
-                    dash={[5, 5]}
+                    strokeWidth={2.5} 
+                    dash={[6, 3]}
                   />
                 ) : (
                   <Rect 
@@ -310,9 +389,9 @@ export default function CanvasEditor({ imageFile, onCropAdd, onClearRegions, reg
                     y={newRegion.y} 
                     width={newRegion.width} 
                     height={newRegion.height} 
-                    stroke="#fff" 
-                    strokeWidth={1} 
-                    dash={[4, 4]}
+                    stroke="#fbbf24" 
+                    strokeWidth={2.5} 
+                    dash={[6, 3]}
                   />
                 )}
               </Group>

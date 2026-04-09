@@ -48,6 +48,10 @@ export default function Home() {
     setRegions(prev => prev.map(r => r.id === id ? { ...r, name } : r));
   };
 
+  const handleUpdateRegion = (id: string, updates: Partial<CropRegion>) => {
+    setRegions(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r));
+  };
+
   const handleUpdateSettings = (newSettings: Partial<typeof namingSettings>) => {
     const updated = { ...namingSettings, ...newSettings };
     setNamingSettings(updated);
@@ -106,6 +110,7 @@ export default function Home() {
             <CanvasEditorWrapper 
               imageFile={imageFile} 
               onCropAdd={handleAddCrop}
+              onUpdateRegion={handleUpdateRegion}
               onClearRegions={handleClearRegions}
               regions={regions} 
             />
