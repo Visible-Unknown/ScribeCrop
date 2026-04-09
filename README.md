@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ScribeCrop
+
+**High-efficiency dataset annotation and image region extraction.**
+
+ScribeCrop was born out of frustration with standard image editing utilities. When annotating large datasets, tools like the Snipping Tool, Paint, or Windows Photos fail to keep up. They are designed for one-off edits, not high-volume production. 
+
+ScribeCrop solves the three biggest bottlenecks in manual dataset preparation:
+1. **Single-Crop Fatigue**: Instead of opening and saving a file for every single word, ScribeCrop allows you to map out every region on a single image and export them all in one click.
+2. **Naming Friction**: Forget typing `word_01`, `word_02`, `word_03` manually. ScribeCrop handles sequential naming automatically with custom prefixes and start indices.
+3. **Scaling & Precision**: Generic tools often struggle with consistent scaling and high-precision selection. ScribeCrop provides sub-pixel accuracy with interactive handles and automated workspace scaling.
+
+---
+
+![ScribeCrop UI Preview](src/app/icon.png)
+
+## Core Capabilities
+
+- **🚀 Bulk Extraction**: Draw rectangles, squares, circles, or complex polygons across your entire image.
+- **⚡ Reactive Renaming**: Set a prefix and a start number; ScribeCrop re-indexes your entire collection instantly as you work.
+- **🎯 Precision Reshaping**: Use professional transformer handles to fine-tune your crop areas after drawing them.
+- **🔄 Universal Rotation**: Rotate documents or photos to any orientation without losing your coordinate space.
+- **📦 ZIP Export**: One-button export that packages your entire session into a clean, labeled ZIP archive.
+- **💎 Premium Aesthetic**: A tailored Emerald & Zinc interface designed for focus and tool-centric clarity.
+
+## Technical Foundation
+
+Building a professional tool requires a robust stack. ScribeCrop is built with precision in mind:
+
+- **Framework**: Next.js (App Router) for high-performance client-side rendering.
+- **Canvas Engine**: [Konva.js](https://konvajs.org/) — powering the multi-layered selection and transformation engine.
+- **Aesthetics**: Vanilla CSS with a custom monochromatic color system for minimum distraction.
+- **Icons**: [Lucide React](https://lucidreact.dev/) for crisp, scalable tool-set representation.
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### Installation
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Visible-Unknown/ScribeCrop.git
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Launch the development server:
+   ```bash
+   npm run dev
+   ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to start harvesting.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+*Designed for researchers, developers, and data scientists who value their time.*
