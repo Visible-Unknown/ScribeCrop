@@ -4,9 +4,24 @@ export const extractCrop = (
   image: HTMLImageElement,
   region: CropRegion,
   scaleX: number,
-  scaleY: number
+  scaleY: number,
+  rotation: number = 0
 ): Promise<string> => {
   return new Promise((resolve) => {
+    // 1. Create a temporary canvas representing the FULL rotated image
+    const fullCanvas = document.createElement('canvas');
+    const fullCtx = fullCanvas.getContext('2d');
+    if (!fullCtx) return resolve('');
+
+    const isVertical = rotation === 90 || rotation === 270;
+    fullCanvas.width = isVertical ? image.height : image.width;
+    fullCanvas.height = isVertical ? image.width : image.height;
+
+    fullCtx.translate(fullCanvas.width / 2, fullCanvas.height / 2);
+    fullCtx.rotate((rotation * Math.PI) / 180);
+    fullCtx.drawImage(image, -image.width / 2, -image.height / 2);
+
+    // 2. Use fullCanvas as the source for the crop extraction
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     if (!ctx) return resolve('');
@@ -23,7 +38,7 @@ export const extractCrop = (
       canvas.width = realW;
       canvas.height = realH;
       ctx.drawImage(
-        image,
+        fullCanvas,
         realX, realY, realW, realH,
         0, 0, realW, realH
       );
@@ -39,7 +54,7 @@ export const extractCrop = (
       ctx.ellipse(radiusX, radiusY, radiusX, radiusY, 0, 0, 2 * Math.PI);
       ctx.clip();
       ctx.drawImage(
-        image,
+        fullCanvas,
         realX, realY, realW, realH,
         0, 0, realW, realH
       );
@@ -71,7 +86,7 @@ export const extractCrop = (
       
       // Draw the image shifted by minX, minY
       ctx.drawImage(
-        image,
+        fullCanvas,
         minX / scaleX, minY / scaleY, polyW, polyH,
         0, 0, polyW, polyH
       );

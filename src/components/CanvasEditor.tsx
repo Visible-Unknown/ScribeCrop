@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Stage, Layer, Image as KonvaImage, Rect, Circle, Line, Text, Group } from 'react-konva';
-import { Square, Circle as CircleIcon, PenTool, MousePointer2, Settings } from 'lucide-react';
+import { Square, Circle as CircleIcon, PenTool, MousePointer2, RotateCw, RectangleHorizontal } from 'lucide-react';
 import useImage from '../hooks/useImage';
 import { extractCrop } from '../utils/cropImage';
 import { CropRegion, ToolType, Point } from '../types';
@@ -11,10 +11,11 @@ import styles from './CanvasEditor.module.css';
 interface CanvasEditorProps {
   imageFile: File;
   onCropAdd: (region: CropRegion) => void;
+  onClearRegions: () => void;
   regions: CropRegion[];
 }
 
-export default function CanvasEditor({ imageFile, onCropAdd, regions }: CanvasEditorProps) {
+export default function CanvasEditor({ imageFile, onCropAdd, onClearRegions, regions }: CanvasEditorProps) {
   const imageUrl = React.useMemo(() => URL.createObjectURL(imageFile), [imageFile]);
   const [image, status] = useImage(imageUrl);
   
@@ -22,6 +23,7 @@ export default function CanvasEditor({ imageFile, onCropAdd, regions }: CanvasEd
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [scale, setScale] = useState(1);
   
+  const [rotation, setRotation] = useState(0);
   const [tool, setTool] = useState<ToolType | 'select'>('rectangle');
   const [isDrawing, setIsDrawing] = useState(false);
   
@@ -33,17 +35,21 @@ export default function CanvasEditor({ imageFile, onCropAdd, regions }: CanvasEd
       const containerW = containerRef.current.clientWidth - 40;
       const containerH = containerRef.current.clientHeight - 40;
       
-      const scaleX = containerW / image.width;
-      const scaleY = containerH / image.height;
+      const isVertical = rotation === 90 || rotation === 270;
+      const imgW = isVertical ? image.height : image.width;
+      const imgH = isVertical ? image.width : image.height;
+
+      const scaleX = containerW / imgW;
+      const scaleY = containerH / imgH;
       const bestScale = Math.min(scaleX, scaleY, 1); // don't scale up past original size
       
       setScale(bestScale);
       setDimensions({
-        width: image.width * bestScale,
-        height: image.height * bestScale
+        width: imgW * bestScale,
+        height: imgH * bestScale
       });
     }
-  }, [image]);
+  }, [image, rotation]);
 
   const handleMouseDown = (e: any) => {
     if (tool === 'select') return;
@@ -106,7 +112,7 @@ export default function CanvasEditor({ imageFile, onCropAdd, regions }: CanvasEd
         x, y, width, height
       };
 
-      const dataUrl = await extractCrop(image, finalizedRegion, scale, scale);
+      const dataUrl = await extractCrop(image, finalizedRegion, scale, scale, rotation);
       onCropAdd({ ...finalizedRegion, dataUrl });
     }
     setNewRegion(null);
@@ -131,7 +137,7 @@ export default function CanvasEditor({ imageFile, onCropAdd, regions }: CanvasEd
       points: newRegion.points
     };
 
-    const dataUrl = await extractCrop(image, finalizedRegion, scale, scale);
+    const dataUrl = await extractCrop(image, finalizedRegion, scale, scale, rotation);
     onCropAdd({ ...finalizedRegion, dataUrl });
     
     setIsDrawing(false);
@@ -164,10 +170,29 @@ export default function CanvasEditor({ imageFile, onCropAdd, regions }: CanvasEd
         </div>
         <div className={styles.toolGroup}>
           <button 
+            className={styles.toolButton}
+            onClick={() => {
+              // Rotate the image
+              setRotation(prev => (prev + 90) % 360);
+              // Clear regions to avoid alignment mismatch
+              if (regions.length > 0) {
+                if (window.confirm("Rotating the image will clear existing crop regions. Proceed?")) {
+                  onClearRegions();
+                } else {
+                  // Revert rotation if user cancels
+                  setRotation(prev => (prev - 90 + 360) % 360);
+                }
+              }
+            }}
+            title="Rotate 90°"
+          ><RotateCw size={18} /></button>
+        </div>
+        <div className={styles.toolGroup}>
+          <button 
             className={`${styles.toolButton} ${tool === 'rectangle' ? styles.active : ''}`}
             onClick={() => setTool('rectangle')}
             title="Rectangle Crop"
-          ><Square size={18} strokeWidth={1.5} style={{ transform: 'scaleX(1.4)' }} /> <span>Rect</span></button>
+          ><RectangleHorizontal size={18} /></button>
           
           <button 
             className={`${styles.toolButton} ${tool === 'square' ? styles.active : ''}`}
@@ -213,8 +238,11 @@ export default function CanvasEditor({ imageFile, onCropAdd, regions }: CanvasEd
           <Layer>
             <KonvaImage 
               image={image} 
-              width={dimensions.width} 
-              height={dimensions.height} 
+              width={rotation === 90 || rotation === 270 ? dimensions.height : dimensions.width} 
+              height={rotation === 90 || rotation === 270 ? dimensions.width : dimensions.height} 
+              rotation={rotation}
+              x={rotation === 90 ? dimensions.width : rotation === 180 ? dimensions.width : rotation === 270 ? 0 : 0}
+              y={rotation === 90 ? 0 : rotation === 180 ? dimensions.height : rotation === 270 ? dimensions.height : 0}
             />
 
             {/* Render saved regions */}

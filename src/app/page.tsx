@@ -73,6 +73,10 @@ export default function Home() {
     }));
   };
 
+  const handleClearRegions = () => {
+    setRegions([]);
+  };
+
   const handleDownloadAll = () => {
     downloadAsZip(regions, `word_crops_${Date.now()}.zip`);
   };
@@ -102,6 +106,7 @@ export default function Home() {
             <CanvasEditorWrapper 
               imageFile={imageFile} 
               onCropAdd={handleAddCrop}
+              onClearRegions={handleClearRegions}
               regions={regions} 
             />
             <PreviewPanel 
