@@ -12,7 +12,7 @@ ScribeCrop solves the three biggest bottlenecks in manual dataset preparation:
 ---
 
 <p align="center">
-  <img src="src/app/icon.png" width="150" alt="ScribeCrop Logo" />
+  <img src="web/public/icon.png" width="150" alt="ScribeCrop Logo" />
 </p>
 
 ## Core Capabilities
