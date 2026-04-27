@@ -20,6 +20,12 @@ web/*.tsbuildinfo
 desktop/dist/
 desktop/node_modules/
 
+# ── Global Build Artifacts ────────────────────────────────────────────────────
+.next/
+out/
+dist/
+build/
+
 # ── testing ───────────────────────────────────────────────────────────────────
 coverage/
 
