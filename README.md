@@ -24,36 +24,59 @@ ScribeCrop solves the three biggest bottlenecks in manual dataset preparation:
 - **📦 ZIP Export**: One-button export that packages your entire session into a clean, labeled ZIP archive.
 - **💎 Premium Aesthetic**: A tailored Emerald & Zinc interface designed for focus and tool-centric clarity.
 
-## Technical Foundation
+## ScribeCrop Monorepo
 
-Building a professional tool requires a robust stack. ScribeCrop is built with precision in mind:
+A professional image word extractor and cropper, now available for both Web and Desktop.
 
-- **Framework**: Next.js (App Router) for high-performance client-side rendering.
-- **Canvas Engine**: [Konva.js](https://konvajs.org/) — powering the multi-layered selection and transformation engine.
-- **Aesthetics**: Vanilla CSS with a custom monochromatic color system for minimum distraction.
-- **Icons**: [Lucide React](https://lucidreact.dev/) for crisp, scalable tool-set representation.
+## Project Structure
+
+- `web/`: Next.js application (React, Konva, Lucide).
+- `desktop/`: Electron wrapper for the desktop experience.
 
 ## Getting Started
 
-### Prerequisites
-- Node.js (v18 or higher)
-- npm or yarn
-
-### Installation
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Visible-Unknown/ScribeCrop.git
-   ```
-2. Install dependencies:
+1. **Install dependencies** (from the root):
    ```bash
    npm install
    ```
-3. Launch the development server:
+
+2. **Run Web Version**:
    ```bash
-   npm run dev
+   npm run web:dev
    ```
 
-Open [http://localhost:3000](http://localhost:3000) to start harvesting.
+3. **Run Desktop Version (Development)**:
+   *First, start the web dev server in one terminal:*
+   ```bash
+   npm run web:dev
+   ```
+   *Then, launch Electron in another terminal:*
+   ```bash
+   npm run desktop:dev
+   ```
+
+4. **Build Desktop Version**:
+   ```bash
+   npm run build
+   ```
+   This will build the web static export and then package the Electron app into the `desktop/dist` folder.
+
+## Scripts
+
+- `npm run web:dev`: Start Next.js dev server.
+- `npm run web:build`: Generate static export in `web/out`.
+- `npm run desktop:dev`: Launch Electron pointing to local dev server.
+- `npm run desktop:preview`: Launch Electron pointing to `web/out`.
+- `npm run desktop:build`: Package the desktop app.
+- `npm run build`: Full production build (Web + Desktop).
+
+## Technology Stack
+
+- **Core**: Next.js, React, TypeScript
+- **Graphics**: Konva.js (Canvas API)
+- **Desktop**: Electron, Electron Builder
+- **Styling**: Vanilla CSS Modules
+- **Icons**: Lucide React
 
 ---
 

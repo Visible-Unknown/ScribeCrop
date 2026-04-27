@@ -88,8 +88,12 @@ export default function Home() {
   return (
     <main className="app-container">
       <header className="header">
-        <CropIcon size={24} style={{ marginRight: '10px', color: 'var(--color-primary)' }} />
-        <span>ScribeCrop</span>
+        <img 
+          src="/icon.png" 
+          alt="ScribeCrop Logo" 
+          style={{ width: '28px', height: '28px', marginRight: '12px', borderRadius: '6px' }} 
+        />
+        <span style={{ fontWeight: 700, letterSpacing: '-0.5px' }}>ScribeCrop</span>
         
         {imageFile && (
           <button 
